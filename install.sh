@@ -3,17 +3,24 @@
 
 echo "🚀 شروع فرآیند نصب هوشمند پنل..."
 
-# ۱. نصب پیش‌نیازها
-apt update && apt install zip git wget -y
+# ۱. نصب پیش‌نیازها (اضافه شدن curl برای پیدا کردن آخرین نسخه)
+apt update && apt install zip git wget curl -y
 
-# ۲. بررسی و نصب زبان گو در صورت عدم وجود
+# اطمینان از اینکه مسیر Go در همین جلسه ترمینال شناخته می‌شود
+export PATH=$PATH:/usr/local/go/bin
+
+# ۲. بررسی و نصب زبان گو به صورت کاملاً داینامیک
 if ! command -v go &> /dev/null; then
-    echo "📥 در حال نصب زبان Go..."
-    wget https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
-    rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+    echo "📥 در حال پیدا کردن و نصب آخرین نسخه زبان Go..."
+    # پیدا کردن آخرین نسخه به صورت خودکار از سرور گوگل
+    LATEST_GO=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
+    echo "✅ نسخه پیدا شده: $LATEST_GO"
+    
+    wget https://go.dev/dl/${LATEST_GO}.linux-amd64.tar.gz
+    rm -rf /usr/local/go && tar -C /usr/local -xzf ${LATEST_GO}.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
     echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-    rm go1.22.4.linux-amd64.tar.gz
+    rm ${LATEST_GO}.linux-amd64.tar.gz
 fi
 
 # ۳. ایجاد پوشه‌های ساختاری سیستم
