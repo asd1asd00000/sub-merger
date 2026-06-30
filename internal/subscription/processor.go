@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/sub-merger/internal/db" // وارد کردن دیتابیس برای خواندن تنظیمات
-	"github.com/yourusername/sub-merger/internal/fetcher"
-	"github.com/yourusername/sub-merger/internal/models"
-	"github.com/yourusername/sub-merger/internal/parser"
+	"github.com/asd1asd00000/sub-merger/internal/db" // وارد کردن دیتابیس برای خواندن تنظیمات
+	"github.com/asd1asd00000/sub-merger/internal/fetcher"
+	"github.com/asd1asd00000/sub-merger/internal/models"
+	"github.com/asd1asd00000/sub-merger/internal/parser"
 )
 
 type PanelData struct {
