@@ -1,5 +1,13 @@
 #!/bin/bash
-# Sub-Merger Interactive Auto-Installer
+# Sub-Merger Interactive Auto-Installer (Pro Hardcoded Edition)
+
+# -------------------------------------------------------------
+# Anti-Sanction & Stability Configuration
+# اعمال تنظیمات ضدتحریم و قفل کردن آپدیت خودکار زبان Go
+# -------------------------------------------------------------
+export GOTOOLCHAIN=local
+export GOPROXY=https://goproxy.io,direct
+export GOSUMDB=off
 
 # Color variables for terminal
 C_DEF='\033[0m'
@@ -29,16 +37,23 @@ echo "================================================="
 echo -e "📥 ${C_CYAN}Installing required packages...${C_DEF}"
 apt update && apt install zip git wget curl jq nginx certbot python3-certbot-nginx -y
 
-# 3. Install Go dynamically
+# 3. Install Go (Hardcoded to 1.22.4 for absolute stability)
 export PATH=$PATH:/usr/local/go/bin
 if ! command -v go &> /dev/null; then
-    echo -e "📥 ${C_CYAN}Downloading the latest Go version...${C_DEF}"
-    LATEST_GO=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
+    LATEST_GO="go1.22.4"
+    echo -e "📥 ${C_CYAN}Downloading Go version ${LATEST_GO} (Hardcoded)...${C_DEF}"
+    
     wget https://go.dev/dl/${LATEST_GO}.linux-amd64.tar.gz
     rm -rf /usr/local/go && tar -C /usr/local -xzf ${LATEST_GO}.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
+    
+    # Save Anti-Sanction configs to bashrc for future manual commands
     echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-    rm ${LATEST_GO}.linux-amd64.tar.gz
+    echo 'export GOTOOLCHAIN=local' >> ~/.bashrc
+    echo 'export GOPROXY=https://goproxy.io,direct' >> ~/.bashrc
+    echo 'export GOSUMDB=off' >> ~/.bashrc
+    
+    rm -f ${LATEST_GO}.linux-amd64.tar.gz
 fi
 
 # 4. Create settings directory and json
@@ -56,8 +71,11 @@ cat <<EOF > /etc/merge_subs/settings.json
 }
 EOF
 
-# 5. Build the Go project
+# 5. Build the Go project (With Toolchain lockdown)
 echo -e "⚙️  ${C_CYAN}Building the core application...${C_DEF}"
+go clean -modcache
+go mod edit -go=1.22.0
+go mod edit -toolchain=none
 go mod tidy
 go build -o /usr/local/bin/sub-merger-app cmd/server/main.go
 chmod +x /usr/local/bin/sub-merger-app
