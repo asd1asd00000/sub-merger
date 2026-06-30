@@ -1,18 +1,18 @@
 #!/bin/bash
-# نصاب تعاملی و هوشمند پورتال تجمیع سابسکریپشن
+# Sub-Merger Interactive Auto-Installer
 
-# تعریف رنگ‌های گرافیکی برای ترمینال
-C_DEF='\033[0m'          # حذف رنگ
-C_GREEN='\033[1;32m'     # سبز درخشان
-C_CYAN='\033[1;36m'      # فیروزه‌ای
-C_YELLOW='\033[1;33m'    # زرد
-C_BOX='\033[38;5;63m'    # آبی-بنفش (برای حاشیه جدول)
+# Color variables for terminal
+C_DEF='\033[0m'
+C_GREEN='\033[1;32m'
+C_CYAN='\033[1;36m'
+C_YELLOW='\033[1;33m'
+C_BOX='\033[38;5;63m'
 
 echo -e "${C_CYAN}=================================================${C_DEF}"
-echo -e "  🚀 ${C_GREEN}SVM-Panel Installer - Pro Edition${C_DEF} 🚀  "
+echo -e "  🚀 ${C_GREEN}Sub-Merger Installer - Pro Edition${C_DEF} 🚀  "
 echo -e "${C_CYAN}=================================================${C_DEF}"
 
-# ۱. دریافت اطلاعات از کاربر با مقادیر پیش‌فرض
+# 1. Get user input with default values
 read -p "👤 Enter Admin Username [admin]: " ADMIN_USER
 ADMIN_USER=${ADMIN_USER:-admin}
 
@@ -21,18 +21,18 @@ read -p "🔑 Enter Admin Password [$DEFAULT_PASS]: " ADMIN_PASS
 ADMIN_PASS=${ADMIN_PASS:-$DEFAULT_PASS}
 
 echo "-------------------------------------------------"
-echo "⚠️ نکته: اگر می‌خواهید SSL نصب شود، ساب‌دامنه شما باید الان به IP این سرور متصل باشد."
+echo "⚠️  Note: If you want to install SSL, your subdomain MUST be pointed to this server's IP."
 read -p "🌐 Enter Subdomain (e.g., sub.domain.com) [Leave blank for IP only]: " DOMAIN
 echo "================================================="
 
-# ۲. نصب پیش‌نیازها
-echo -e "📥 ${C_CYAN}در حال نصب پکیج‌های لینوکس...${C_DEF}"
+# 2. Install dependencies
+echo -e "📥 ${C_CYAN}Installing required packages...${C_DEF}"
 apt update && apt install zip git wget curl jq nginx certbot python3-certbot-nginx -y
 
-# ۳. نصب داینامیک زبان Go
+# 3. Install Go dynamically
 export PATH=$PATH:/usr/local/go/bin
 if ! command -v go &> /dev/null; then
-    echo -e "📥 ${C_CYAN}در حال دانلود آخرین نسخه Go...${C_DEF}"
+    echo -e "📥 ${C_CYAN}Downloading the latest Go version...${C_DEF}"
     LATEST_GO=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
     wget https://go.dev/dl/${LATEST_GO}.linux-amd64.tar.gz
     rm -rf /usr/local/go && tar -C /usr/local -xzf ${LATEST_GO}.linux-amd64.tar.gz
@@ -41,8 +41,8 @@ if ! command -v go &> /dev/null; then
     rm ${LATEST_GO}.linux-amd64.tar.gz
 fi
 
-# ۴. ساخت پوشه تنظیمات و ایجاد فایل Credentials
-echo -e "⚙️  ${C_CYAN}در حال تنظیم دیتابیس و رمزهای عبور...${C_DEF}"
+# 4. Create settings directory and json
+echo -e "⚙️  ${C_CYAN}Configuring database and credentials...${C_DEF}"
 mkdir -p /etc/merge_subs
 cat <<EOF > /etc/merge_subs/settings.json
 {
@@ -56,17 +56,17 @@ cat <<EOF > /etc/merge_subs/settings.json
 }
 EOF
 
-# ۵. کامپایل پروژه گولنگ
-echo -e "⚙️  ${C_CYAN}در حال بیلد کردن هسته پنل...${C_DEF}"
+# 5. Build the Go project
+echo -e "⚙️  ${C_CYAN}Building the core application...${C_DEF}"
 go mod tidy
 go build -o /usr/local/bin/sub-merger-app cmd/server/main.go
 chmod +x /usr/local/bin/sub-merger-app
 
-# ۶. ساخت سرویس لینوکس
-echo -e "🛠️  ${C_CYAN}راه‌اندازی سرویس Systemd...${C_DEF}"
+# 6. Create and start Systemd service
+echo -e "🛠️  ${C_CYAN}Setting up Systemd service...${C_DEF}"
 cat <<EOF > /etc/systemd/system/sub-merger.service
 [Unit]
-Description=SVM Subscription Merger Panel
+Description=Sub-Merger Panel Service
 After=network.target
 
 [Service]
@@ -85,11 +85,11 @@ systemctl daemon-reload
 systemctl enable sub-merger.service
 systemctl restart sub-merger.service
 
-# ۷. پیکربندی وب‌سرور (Nginx) و SSL در صورت وارد کردن دامنه
+# 7. Configure Nginx and SSL
 FINAL_URL="http://$(curl -s ifconfig.me):5000/admin"
 
 if [ ! -z "$DOMAIN" ]; then
-    echo -e "🌍 ${C_CYAN}در حال تنظیمات Nginx و دریافت گواهینامه SSL برای $DOMAIN ...${C_DEF}"
+    echo -e "🌍 ${C_CYAN}Configuring Nginx and fetching SSL for $DOMAIN...${C_DEF}"
     
     rm -f /etc/nginx/sites-enabled/default
 
@@ -117,16 +117,14 @@ else
     ufw allow 5000/tcp > /dev/null 2>&1
 fi
 
-# ==========================================
-# ۸. چاپ جدول گرافیکی و رنگی اطلاعات پایانی
-# ==========================================
+# 8. Print final credentials in a perfect ASCII box
 echo -e ""
-echo -e "${C_BOX}╭──────────────────────────────────────────────────────────────────╮${C_DEF}"
-echo -e "${C_BOX}│${C_DEF}  ${C_GREEN}✅ نصب پنل SVM با موفقیت به پایان رسید!${C_DEF}                       ${C_BOX}│${C_DEF}"
-echo -e "${C_BOX}├──────────────────────────────────────────────────────────────────┤${C_DEF}"
-echo -e "${C_BOX}│${C_DEF}  🌐 ${C_CYAN}آدرس ورود:${C_DEF}  $FINAL_URL"
-echo -e "${C_BOX}│${C_DEF}  👤 ${C_YELLOW}نام کاربری:${C_DEF} $ADMIN_USER"
-echo -e "${C_BOX}│${C_DEF}  🔑 ${C_YELLOW}رمز عبور:${C_DEF}   $ADMIN_PASS"
-echo -e "${C_BOX}╰──────────────────────────────────────────────────────────────────╯${C_DEF}"
-echo -e "💡 ${C_GREEN}نکته:${C_DEF} حتماً این اطلاعات را در جای امنی ذخیره کنید."
+echo -e "${C_BOX}╭──────────────────────────────────────────────────────────────────────╮${C_DEF}"
+echo -e "${C_BOX}│${C_DEF}  ${C_GREEN}✅ Sub-Merger Panel Installed Successfully!${C_DEF}                          ${C_BOX}│${C_DEF}"
+echo -e "${C_BOX}├──────────────────────────────────────────────────────────────────────┤${C_DEF}"
+printf "${C_BOX}│${C_DEF}  %b %-55s ${C_BOX}│\n${C_DEF}" "🌐 ${C_CYAN}URL:      ${C_DEF}" "$FINAL_URL"
+printf "${C_BOX}│${C_DEF}  %b %-55s ${C_BOX}│\n${C_DEF}" "👤 ${C_YELLOW}Username: ${C_DEF}" "$ADMIN_USER"
+printf "${C_BOX}│${C_DEF}  %b %-55s ${C_BOX}│\n${C_DEF}" "🔑 ${C_YELLOW}Password: ${C_DEF}" "$ADMIN_PASS"
+echo -e "${C_BOX}╰──────────────────────────────────────────────────────────────────────╯${C_DEF}"
+echo -e "💡 ${C_GREEN}Note:${C_DEF} Please save these credentials in a safe place."
 echo -e ""
