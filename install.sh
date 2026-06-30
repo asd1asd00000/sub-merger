@@ -37,23 +37,21 @@ echo "================================================="
 echo -e "📥 ${C_CYAN}Installing required packages...${C_DEF}"
 apt update && apt install zip git wget curl jq nginx certbot python3-certbot-nginx -y
 
-# 3. Install Go (Hardcoded to 1.22.4 for absolute stability)
-export PATH=$PATH:/usr/local/go/bin
+# 3. Install Go (Hardcoded to 1.22 via Ubuntu Official Repos to bypass Google CDN bans)
+export PATH=$PATH:/snap/bin:/usr/local/go/bin
 if ! command -v go &> /dev/null; then
-    LATEST_GO="go1.22.4"
-    echo -e "📥 ${C_CYAN}Downloading Go version ${LATEST_GO} (Hardcoded)...${C_DEF}"
+    echo -e "📥 ${C_CYAN}Installing Go 1.22 (Hardcoded via Snap/Apt)...${C_DEF}"
     
-    wget https://go.dev/dl/${LATEST_GO}.linux-amd64.tar.gz
-    rm -rf /usr/local/go && tar -C /usr/local -xzf ${LATEST_GO}.linux-amd64.tar.gz
-    export PATH=$PATH:/usr/local/go/bin
+    # نصب از طریق اسنپ یا اپت برای جلوگیری از ارور 404/403 گوگل
+    snap install go --channel=1.22/stable --classic || apt install golang-go -y
     
-    # Save Anti-Sanction configs to bashrc for future manual commands
-    echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+    export PATH=$PATH:/snap/bin:/usr/local/go/bin
+    
+    # ذخیره تنظیمات ضدتحریم برای استفاده‌های دستی در آینده
+    echo 'export PATH=$PATH:/snap/bin:/usr/local/go/bin' >> ~/.bashrc
     echo 'export GOTOOLCHAIN=local' >> ~/.bashrc
     echo 'export GOPROXY=https://goproxy.io,direct' >> ~/.bashrc
     echo 'export GOSUMDB=off' >> ~/.bashrc
-    
-    rm -f ${LATEST_GO}.linux-amd64.tar.gz
 fi
 
 # 4. Create settings directory and json
