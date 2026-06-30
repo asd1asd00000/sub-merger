@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/sub-merger/internal/db"
-	"github.com/yourusername/sub-merger/internal/fetcher"
-	"github.com/yourusername/sub-merger/internal/models"
-	"github.com/yourusername/sub-merger/internal/parser"
+	"github.com/asd1asd00000/sub-merger/internal/db"
+	"github.com/asd1asd00000/sub-merger/internal/fetcher"
+	"github.com/asd1asd00000/sub-merger/internal/models"
+	"github.com/asd1asd00000/sub-merger/internal/parser"
 )
 
 func checkAuth(r *http.Request) bool {
